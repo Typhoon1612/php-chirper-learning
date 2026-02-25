@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Chirp;
 use Illuminate\Http\Request;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ChirpController extends Controller
 {
@@ -66,24 +67,39 @@ class ChirpController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    
+    public function edit(Chirp $chirp)
     {
-        //
+        // We'll add authorization in lesson 11
+        return view('chirps.edit', compact('chirp'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Chirp $chirp)
     {
-        //
+        // TODO: Lesson 11 - replace with $this->authorize('update', $chirp) once auth is set up
+        if ($request->user() && $request->user()->cannot('update', $chirp)) {
+            abort(403);
+        }
+        // Validate
+        $validated = $request->validate([
+            'message' => 'required|string|max:255',
+        ]);
+
+        // Update
+        $chirp->update($validated);
+
+        return redirect('/')->with('success', 'Chirp updated!');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(Request $request, Chirp $chirp)
     {
-        //
+        // TODO: Lesson 11 - replace with $this->authorize('delete', $chirp) once auth is set up
+        if ($request->user() && $request->user()->cannot('delete', $chirp)) {
+            abort(403);
+        }
+
+        $chirp->delete();
+
+        return redirect('/')->with('success', 'Chirp deleted!');
     }
 }
