@@ -28,33 +28,52 @@ class ChirpController extends Controller
     {
         //
     }
+    
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'message' => 'required|string|max:255',
+        ]);
+
+        // Use the authenticated user
+        auth()->user()->chirps()->create($validated);
+
+        return redirect('/')->with('success', 'Your chirp has been posted!');
+    }
+
+    public function edit(Chirp $chirp)
+    {
+        $this->authorize('update', $chirp);
+
+        return view('chirps.edit', compact('chirp'));
+    }
+
+    public function update(Request $request, Chirp $chirp)
+    {
+        $this->authorize('update', $chirp);
+
+        $validated = $request->validate([
+            'message' => 'required|string|max:255',
+        ]);
+
+        $chirp->update($validated);
+
+        return redirect('/')->with('success', 'Chirp updated!');
+    }
+
+    public function destroy(Chirp $chirp)
+    {
+        $this->authorize('delete', $chirp);
+
+        $chirp->delete();
+
+        return redirect('/')->with('success', 'Chirp deleted!');
+    }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-        // Validate the request
-        $validated = $request->validate([
-            'message' => [
-                'required',
-                'string',
-                'max:255',
-            ]
-        ], [
-            'message.required' => 'Please enter a message for your chirp!',
-            'message.max' => 'Your chirp can only be 255 characters long.'
-        ]);
     
-        // Create the chirp (no user for now - we'll add auth later)
-        \App\Models\Chirp::create([
-            'message' => $validated['message'],
-            'user_id' => null, // We'll add authentication in lesson 11
-        ]);
-    
-        // Redirect back to the feed
-        return redirect('/')->with('success', 'Chirp created!');
-    }
 
     /**
      * Display the specified resource.
@@ -64,42 +83,66 @@ class ChirpController extends Controller
         //
     }
 
+    // public function store(Request $request)
+    // {
+    //     // Validate the request
+    //     $validated = $request->validate([
+    //         'message' => [
+    //             'required',
+    //             'string',
+    //             'max:255',
+    //         ]
+    //     ], [
+    //         'message.required' => 'Please enter a message for your chirp!',
+    //         'message.max' => 'Your chirp can only be 255 characters long.'
+    //     ]);
+    
+    //     // Create the chirp (no user for now - we'll add auth later)
+    //     \App\Models\Chirp::create([
+    //         'message' => $validated['message'],
+    //         'user_id' => null, // We'll add authentication in lesson 11
+    //     ]);
+    
+    //     // Redirect back to the feed
+    //     return redirect('/')->with('success', 'Chirp created!');
+    // }
+
     /**
      * Show the form for editing the specified resource.
      */
     
-    public function edit(Chirp $chirp)
-    {
-        // We'll add authorization in lesson 11
-        return view('chirps.edit', compact('chirp'));
-    }
+    // public function edit(Chirp $chirp)
+    // {
+    //     // We'll add authorization in lesson 11
+    //     return view('chirps.edit', compact('chirp'));
+    // }
 
-    public function update(Request $request, Chirp $chirp)
-    {
-        // TODO: Lesson 11 - replace with $this->authorize('update', $chirp) once auth is set up
-        if ($request->user() && $request->user()->cannot('update', $chirp)) {
-            abort(403);
-        }
-        // Validate
-        $validated = $request->validate([
-            'message' => 'required|string|max:255',
-        ]);
+    // public function update(Request $request, Chirp $chirp)
+    // {
+    //     // TODO: Lesson 11 - replace with $this->authorize('update', $chirp) once auth is set up
+    //     if ($request->user() && $request->user()->cannot('update', $chirp)) {
+    //         abort(403);
+    //     }
+    //     // Validate
+    //     $validated = $request->validate([
+    //         'message' => 'required|string|max:255',
+    //     ]);
 
-        // Update
-        $chirp->update($validated);
+    //     // Update
+    //     $chirp->update($validated);
 
-        return redirect('/')->with('success', 'Chirp updated!');
-    }
+    //     return redirect('/')->with('success', 'Chirp updated!');
+    // }
 
-    public function destroy(Request $request, Chirp $chirp)
-    {
-        // TODO: Lesson 11 - replace with $this->authorize('delete', $chirp) once auth is set up
-        if ($request->user() && $request->user()->cannot('delete', $chirp)) {
-            abort(403);
-        }
+    // public function destroy(Request $request, Chirp $chirp)
+    // {
+    //     // TODO: Lesson 11 - replace with $this->authorize('delete', $chirp) once auth is set up
+    //     if ($request->user() && $request->user()->cannot('delete', $chirp)) {
+    //         abort(403);
+    //     }
 
-        $chirp->delete();
+    //     $chirp->delete();
 
-        return redirect('/')->with('success', 'Chirp deleted!');
-    }
+    //     return redirect('/')->with('success', 'Chirp deleted!');
+    // }
 }
